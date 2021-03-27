@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.Scanner;
 
 public class DBM {
-    public static void main(String[] args) throws FileNotFoundException, IOException{
+    public static void main(String[] args) throws IOException{
 
         Scanner csv = new Scanner(new FileInputStream("Car Maintenance Record.csv"));
         PrintWriter json = new PrintWriter(new FileOutputStream("Car Maintenance Record.json"));
@@ -13,7 +13,7 @@ public class DBM {
         json.close();
         log.close();
         json.close();
-        printProcessedFiles();
+        displayProcessedFiles();
     }
 
 
@@ -149,17 +149,15 @@ public class DBM {
      *     Gives user two attempt to input a valid filename that they wanna display
      *     when user inputs a valid filename displays the data inside
      *     and asks if they want to display any more files
-     *     if not, method ends
-     *
+     *     if not, method ends.
      *</p>
-     * @throws IOException
      */
-    public static void printProcessedFiles() throws IOException{
+    public static void displayProcessedFiles() {
         String displayFileName;
-        String displayLine = " ";
+        String displayLine ;
         int prompt = 1;
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        BufferedReader bp = null;
+        BufferedReader bp;
 
         while (prompt == 1) {
             try {
@@ -170,7 +168,7 @@ public class DBM {
                 try {
                     bp = new BufferedReader((new FileReader(displayFileName)));
                 } catch (FileNotFoundException e) {
-                    System.out.print("You got one more chance to enter a valid file name: ");
+                    System.out.print("You got one more chance to enter a valid file name, butterfingers: ");
                     displayFileName = br.readLine();
                     bp = new BufferedReader((new FileReader(displayFileName)));
                     System.out.println();
@@ -185,8 +183,12 @@ public class DBM {
                 System.out.print("That was all the data inside the file, Enter 1 if you want to display another file: ");
                 prompt = Integer.parseInt(br.readLine());
 
-            } catch (Exception e) {
+            } catch (FileNotFoundException e) {
                 System.out.println("Guess we don't want to display anything, Bye!");
+                prompt = 0;
+            }
+            catch (Exception e){
+                System.out.println("Wwwwhy? I mean that's okay, but you could have just entered 0 instead!");
                 prompt = 0;
             }
         }
