@@ -14,7 +14,7 @@ class Records {
 /**
  * used to adjust string array for 'comma inside quote' edge case
  * <p>
- *     first counts no of extra tokens split due comma inside quotes
+ *     first counts no of extra tokens split due to comma inside quotes
  *     then creates an array of adjusted size
  *     and stores it with comma separated tokens
  *     but in case of a token starting with '"' joins it together until the end quote
@@ -30,6 +30,7 @@ class Records {
         int cnt = 0;
         /* counter to iterate the finalData string */
         int cnt2 = 0;
+
         /* loop to count number of extra tokens */
         for (int i = 0; i<data.length; i++){
             if (data[i]!=""){

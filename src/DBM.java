@@ -1,21 +1,19 @@
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Scanner;
 
 public class DBM {
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException, IOException{
 
         Scanner csv = new Scanner(new FileInputStream("Car Maintenance Record.csv"));
         PrintWriter json = new PrintWriter(new FileOutputStream("Car Maintenance Record.json"));
         PrintWriter log = new PrintWriter(new FileOutputStream("errorLog.txt"));
 
-        int p = processFilesForValidation(csv, json, log, "Car Maintenance Record.csv");
+        boolean p = processFilesForValidation(csv, json, log, "Car Maintenance Record.csv");
         System.out.println(p);
         json.close();
         log.close();
         json.close();
+        printProcessedFiles();
     }
 
 
@@ -35,9 +33,9 @@ public class DBM {
      * @param json          printwriter object that has file to which json objects are written
      * @param log           printwriter object that has file that logs any error in input file
      * @param inputFileName string that contains the name of the file from which data is being read
-     * @return -0 if file has a missing field else 1
+     * @return              false if file has a missing field and wasn't processed else true
      */
-    static int processFilesForValidation(Scanner csv, PrintWriter json, PrintWriter log, String inputFileName) {
+    static boolean processFilesForValidation(Scanner csv, PrintWriter json, PrintWriter log, String inputFileName) {
         String dataLine = csv.nextLine();
         Records r = new Records(dataLine);
         Records r1 = null;
@@ -76,9 +74,9 @@ public class DBM {
             System.out.println("File is not converted to JSON");
 
             writeToLogFile(r, r1, log, inputFileName, cntField, 1);
-            return -0;
+            return false;
         }
-        return 1;
+        return true;
     }
 
     /**
@@ -143,6 +141,55 @@ public class DBM {
             json.println("       \""+r.finalData[i]+"\":  \""+r1.finalData[i]+"\",");
         }
         json.println("  },");
+    }
+
+    /**
+     * Prints the file that user inputs
+     *<p>
+     *     Gives user two attempt to input a valid filename that they wanna display
+     *     when user inputs a valid filename displays the data inside
+     *     and asks if they want to display any more files
+     *     if not, method ends
+     *
+     *</p>
+     * @throws IOException
+     */
+    public static void printProcessedFiles() throws IOException{
+        String displayFileName;
+        String displayLine = " ";
+        int prompt = 1;
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader bp = null;
+
+        while (prompt == 1) {
+            try {
+                System.out.print("Enter the name of the file you want to display: ");
+                displayFileName = br.readLine();
+                System.out.println();
+
+                try {
+                    bp = new BufferedReader((new FileReader(displayFileName)));
+                } catch (FileNotFoundException e) {
+                    System.out.print("You got one more chance to enter a valid file name: ");
+                    displayFileName = br.readLine();
+                    bp = new BufferedReader((new FileReader(displayFileName)));
+                    System.out.println();
+                }
+
+                displayLine = bp.readLine();
+                while (displayLine!=null) {
+                    System.out.println(displayLine);
+                    displayLine = bp.readLine();
+                }
+
+                System.out.print("That was all the data inside the file, Enter 1 if you want to display another file: ");
+                prompt = Integer.parseInt(br.readLine());
+
+            } catch (Exception e) {
+                System.out.println("Guess we don't want to display anything, Bye!");
+                prompt = 0;
+            }
+        }
     }
 
 }
