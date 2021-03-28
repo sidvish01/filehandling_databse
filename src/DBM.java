@@ -1,18 +1,61 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class DBM {
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) throws IOException, InterruptedException {
 
-        Scanner csv = new Scanner(new FileInputStream("Car Maintenance Record.csv"));
-        PrintWriter json = new PrintWriter(new FileOutputStream("Car Maintenance Record.json"));
-        PrintWriter log = new PrintWriter(new FileOutputStream("errorLog.txt"));
+        Scanner kb = new Scanner(System.in);
+        System.out.println("Please enter number of files we want to work with today: ");
+        int length = Integer.parseInt(kb.nextLine());
+        String[] fileName = new String[length];
+        Scanner[] csv = new Scanner[length];
+        PrintWriter[] json = new PrintWriter[length];
 
-        boolean p = processFilesForValidation(csv, json, log, "Car Maintenance Record.csv");
-        System.out.println(p);
-        json.close();
-        log.close();
-        json.close();
+        for (int i = 0; i < length; i++){
+           System.out.print("Enter the name of file "+ (i+1) +" :");
+            fileName[i] = kb.nextLine();
+            try{
+                csv[i] = new Scanner(new FileInputStream(fileName[i]));
+            }catch (Exception e){
+                System.out.println("Could not open " +fileName[i]+" for reading");
+                System.out.println("Please check if file exists! Program will terminate after closing all opened files");
+                for (int j = i-1; j >= 0; j--){
+                    csv[j].close();
+                }
+                System.exit(0);
+            }
+        }
+        for (int i = 0; i < length; i++){
+            String s = fileName[i].substring(0, fileName[i].length() - 3) + "json";
+            try{
+                json[i] = new PrintWriter(new FileOutputStream(s));
+            }catch (FileNotFoundException e){
+               System.out.println("Could not be create" + s +" for writing");
+                System.out.println("Program will terminate after deleting all the files that were created and closing all that were opened");
+                for (int j = i-1; j >= 0; j--){
+                    json[j].close();
+                    Files.deleteIfExists(Path.of(fileName[j].substring(0, fileName[j].length() - 3) + "json"));
+                }
+                for (int k = length-1; k >= 0; k--){
+                    csv[k].close();
+                }
+                System.exit(0);
+            }
+        }
+        for (int i = 0; i < length; i++){
+            PrintWriter log = new PrintWriter(new FileOutputStream("errorLog.txt",true));
+            processFilesForValidation(csv[i], json[i], log, fileName[i]);
+            System.out.println("Processing "+fileName[i]);
+            TimeUnit.MILLISECONDS.sleep(500);
+            System.out.println("............");
+            TimeUnit.MILLISECONDS.sleep(500);
+            csv[i].close();
+            json[i].close();
+            log.close();
+        }
         displayProcessedFiles();
     }
 
@@ -33,9 +76,8 @@ public class DBM {
      * @param json          printwriter object that has file to which json objects are written
      * @param log           printwriter object that has file that logs any error in input file
      * @param inputFileName string that contains the name of the file from which data is being read
-     * @return              false if file has a missing field and wasn't processed else true
      */
-    static boolean processFilesForValidation(Scanner csv, PrintWriter json, PrintWriter log, String inputFileName) {
+    static void processFilesForValidation(Scanner csv, PrintWriter json, PrintWriter log, String inputFileName) {
         String dataLine = csv.nextLine();
         Records r = new Records(dataLine);
         Records r1 = null;
@@ -44,39 +86,40 @@ public class DBM {
         int cntData = 0;
 
         try {
-            for (int i = 0; i < r.finalData.length; i++)
-                if (r.finalData[i] == null) cntField++;
+            for (int i = 0; i < r.splitData.length; i++)
+                if (r.splitData[i] == null) cntField++;
             if (cntField > 0) {
                 throw new CSVFileInvalidException();
             } else {
+                json.println("[");
                 while (csv.hasNextLine()) {
                     r1 = new Records(csv.nextLine());
                     try {
-                        for (int i = 0; i < r1.finalData.length; i++) {
-                            if (r1.finalData[i] == null) {
+                        for (int i = 0; i < r1.splitData.length; i++) {
+                            if (r1.splitData[i] == null) {
                                 cntData++;
                                 cntLine = i;
                             }
                         }
-
                         if (cntData > 0) throw new CSVDataMissingException();
                         else writeToJsonFile(r, r1, json);
                     } catch (CSVDataMissingException e) {
                         System.out.println("In file " + inputFileName + " line " + cntLine + " not converted to JSON: Missing Data");
-
+                        System.out.println();
                         writeToLogFile(r, r1, log, inputFileName, cntLine, 2);
                         cntData = 0;
                     }
                 }
+                json.println("]");
             }
         } catch (CSVFileInvalidException e) {
             System.out.println("File " + inputFileName + " is invalid: Field is missing");
             System.out.println("File is not converted to JSON");
 
             writeToLogFile(r, r1, log, inputFileName, cntField, 1);
-            return false;
+            System.out.println("File was not processed");
+            System.out.println();
         }
-        return true;
     }
 
     /**
@@ -95,17 +138,17 @@ public class DBM {
     private static void writeToLogFile(Records r, Records r1, PrintWriter log, String inputFileName, int cnt, int errorCode) {
         if (errorCode==1){
             log.println("File "+inputFileName+" is invalid");
-            log.println("Missing Field: " + (r.finalData.length - cnt) + " detected, " + cnt + " missing");
+            log.println("Missing Field: " + (r.splitData.length - cnt) + " detected, " + cnt + " missing");
 
-            for (int i = 0; i < r.finalData.length - 1; i++) {
-                if (r.finalData[i]!=null)
-                    log.print(r.finalData[i] + ", ");
+            for (int i = 0; i < r.splitData.length - 1; i++) {
+                if (r.splitData[i]!=null)
+                    log.print(r.splitData[i] + ", ");
                 else
                     log.print("***, ");
             }
 
-            if (r.finalData[r.finalData.length - 1]!=null)
-                log.println(r.finalData[r.finalData.length - 1]);
+            if (r.splitData[r.splitData.length - 1]!=null)
+                log.println(r.splitData[r.splitData.length - 1]);
             else
                 log.println("***");
 
@@ -115,17 +158,19 @@ public class DBM {
             /*int to store the position of Field corresponding to missing Data*/
             int line = 0;
             log.println("In file "+ inputFileName +" line "+cnt);
-            for (int i = 0; i < r1.finalData.length; i++){
-                if (r1.finalData[i]==null){
+            for (int i = 0; i < r1.splitData.length; i++){
+                if (r1.splitData[i]==null){
                     log.print("***   ");
                     line = i;
                 }
                 else
-                    log.print(r1.finalData[i] + "   ");
+                    log.print(r1.splitData[i] + "   ");
             }
             log.println();
-            log.println("Missing: "+r.finalData[line]);
+            log.println("Missing: "+r.splitData[line]);
         }
+        log.println("..................................");
+        log.println();
     }
 
     /**
@@ -137,8 +182,8 @@ public class DBM {
      */
     private static void writeToJsonFile(Records r, Records r1, PrintWriter json) {
         json.println("  {");
-        for (int i = 0; i < r.finalData.length; i++){
-            json.println("       \""+r.finalData[i]+"\":  \""+r1.finalData[i]+"\",");
+        for (int i = 0; i < r.splitData.length; i++){
+            json.println("      \""+r.splitData[i]+"\":  \""+r1.splitData[i]+"\",");
         }
         json.println("  },");
     }
@@ -164,7 +209,6 @@ public class DBM {
                 System.out.print("Enter the name of the file you want to display: ");
                 displayFileName = br.readLine();
                 System.out.println();
-
                 try {
                     bp = new BufferedReader((new FileReader(displayFileName)));
                 } catch (FileNotFoundException e) {
@@ -173,21 +217,17 @@ public class DBM {
                     bp = new BufferedReader((new FileReader(displayFileName)));
                     System.out.println();
                 }
-
                 displayLine = bp.readLine();
                 while (displayLine!=null) {
                     System.out.println(displayLine);
                     displayLine = bp.readLine();
                 }
-
                 System.out.print("That was all the data inside the file, Enter 1 if you want to display another file: ");
                 prompt = Integer.parseInt(br.readLine());
-
             } catch (FileNotFoundException e) {
                 System.out.println("Guess we don't want to display anything, Bye!");
                 prompt = 0;
-            }
-            catch (Exception e){
+            } catch (Exception e){
                 System.out.println("Wwwwhy? I mean that's okay, but you could have just entered 0 instead!");
                 prompt = 0;
             }

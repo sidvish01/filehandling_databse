@@ -1,14 +1,8 @@
 class Records {
     String[] splitData;
-    String[] finalData;
 
-    Records(){
-        splitData = new String[0];
-        finalData = new String[0];
-    }
     Records(String dataLine){
-        splitData = dataLine.split(",");
-        finalData = quoteParse(splitData);
+        splitData = quoteParse(dataLine.split(","));
     }
 
 /**
@@ -25,7 +19,7 @@ class Records {
  */
     private String[] quoteParse(String[] data){
         /* string to join together all tokens inside quote */
-        String insideQuote = "";
+        String insideQuote;
         /* counter to store no of extra tokens */
         int cnt = 0;
         /* counter to iterate the finalData string */
