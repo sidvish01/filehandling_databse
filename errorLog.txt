@@ -1,0 +1,5 @@
+File CRRNP.csv is invalid
+Missing Field: 7 detected, 1 missing
+﻿Date, Driver's Name, Driver's Licence number, Car Make, ***, Meter at the start of trip, Meter at the end of trip, Mileage made
+..................................
+

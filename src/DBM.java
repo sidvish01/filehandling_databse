@@ -8,7 +8,7 @@ public class DBM {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         Scanner kb = new Scanner(System.in);
-        System.out.println("Please enter number of files we want to work with today: ");
+        System.out.print("Please enter number of files we want to work with today: ");
         int length = Integer.parseInt(kb.nextLine());
         String[] fileName = new String[length];
         Scanner[] csv = new Scanner[length];
@@ -29,11 +29,10 @@ public class DBM {
             }
         }
         for (int i = 0; i < length; i++){
-            String s = fileName[i].substring(0, fileName[i].length() - 3) + "json";
             try{
-                json[i] = new PrintWriter(new FileOutputStream(s));
+                json[i] = new PrintWriter(new FileOutputStream((fileName[i].substring(0, fileName[i].length()-3)+"json")));
             }catch (FileNotFoundException e){
-               System.out.println("Could not be create" + s +" for writing");
+               System.out.println("Could not be create" + (fileName[i].substring(0, fileName[i].length()-3)+"json")+" for writing");
                 System.out.println("Program will terminate after deleting all the files that were created and closing all that were opened");
                 for (int j = i-1; j >= 0; j--){
                     json[j].close();
