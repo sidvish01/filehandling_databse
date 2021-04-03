@@ -1,6 +1,9 @@
-public class CSVDataMissingException extends Exception{
+/**
+ * Exception class for when error occurs due to missing data
+ */
+public class CSVDataMissingException extends InvalidException{
     public CSVDataMissingException() {
-        super("Error: Input row cannot be parsed due to missing information");
+        super();
     }
 
     public CSVDataMissingException(String msg) { super(msg); }
