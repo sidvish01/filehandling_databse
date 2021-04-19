@@ -1,5 +1,10 @@
-File CRRNP.csv is invalid
+File CRR.csv is invalid
 Missing Field: 7 detected, 1 missing
-﻿Date, Driver's Name, Driver's Licence number, Car Make, ***, Meter at the start of trip, Meter at the end of trip, Mileage made
+***, Driver's Name, Driver's Licence number, Car Make, Plate Number, Meter at the start of trip, Meter at the end of trip, Mileage made
+..................................
+
+In file CRR.csv line 4
+12/10/2020   Adam   234857   BMW X5   ***   205000   210000   5000   
+Missing: Plate Number
 ..................................
 

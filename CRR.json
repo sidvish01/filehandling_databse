@@ -1,15 +1,5 @@
 [
   {
-      "Date":  "12/10/2020",
-      "Driver's Name":  "Adam",
-      "Driver's Licence number":  "234857",
-      "Car Make":  "BMW X5",
-      "Plate Number":  "3EEME73",
-      "Meter at the start of trip":  "205000",
-      "Meter at the end of trip":  "210000",
-      "Mileage made":  "5000",
-  },
-  {
       "Date":  "16/11/2020",
       "Driver's Name":  "Steve",
       "Driver's Licence number":  "4544554",
